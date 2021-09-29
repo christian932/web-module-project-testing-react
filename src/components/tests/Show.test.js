@@ -1,26 +1,67 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import Loading from '../Loading';
+import Episode from '../Episode';
 
 import Show from './../Show';
 
 const testShow = {
     //add in approprate test data structure here.
+    name:'starnge',
+    image:'../../../public/stranger_things.png',
+    summary: 'blablabla',
+    seasons: [
+        {id:0, name: "Season 1", episodes: []}, 
+        {id:1, name: "Season 2", episodes: []}, 
+        {id:2, name: "Season 3", episodes: []}, 
+        {id:3, name: "Season 4", episodes: []}
+      ]
 }
 
 test('renders testShow and no selected Season without errors', ()=>{
+    render(<Show testShow={testShow} selectedSeason={'none'}/>)
+
 });
 
 test('renders Loading component when prop show is null', () => {
+    render(<Show testShow={null}/>)
+    if(testShow === null){
+        render(<Loading />)
+    }
+    const loadH2 = screen.queryByTestId('loading-container');
+
+    expect(loadH2).toBeInTheDocument();
 });
 
 test('renders same number of options seasons are passed in', ()=>{
+    render(<Show testShow={testShow}/>);
+
+    const seasons = testShow.seasons;
+
+    expect(seasons).toHaveLength(4);
 });
 
 test('handleSelect is called when an season is selected', () => {
+    const mockhandleSelect = jest.fn();
+    render(<Show show={testShow} handleSelect={mockhandleSelect} selectedSeason='1' />);
+
+
+    const option = screen.getByLabelText(/Select A Season/i);
+
+    userEvent.selectOptions(option, ['1']);
+    expect(mockhandleSelect).toHaveBeenCalledTimes(1);
 });
 
 test('component renders when no seasons are selected and when rerenders with a season passed in', () => {
+    const { rerender } = render(<Show testShow={testShow} selectedSeason={'none'}/>);
+    let episode = screen.queryByText(/episode/i);
+    expect(episode).toBeFalsy();
+
+
+    rerender(<Show show={testShow} selectedSeason='2'/>)
+    episode = <Episode />
+    expect(episode).toBeTruthy();
 });
 
 //Tasks:
